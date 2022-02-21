@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-@author:  liaoxingy
+@author:  liaoxingyu
 @contact: sherlockliao01@gmail.com
 """
 
