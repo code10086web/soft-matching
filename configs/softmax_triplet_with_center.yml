@@ -1,0 +1,88 @@
+MODEL:
+  PRETRAIN_CHOICE: 'imagenet'
+  PRETRAIN_PATH: 'modeling/resnet50-19c8e357.pth'
+  PREMODEL: 'results/msmt17/train/resnet50_baseline_model.pth'
+  METRIC_LOSS_TYPE: 'triplet_center'
+  IF_WITH_CENTER: 'yes'
+  NAME: 'resnet50'
+
+
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
+  PROB: 0.5 # random horizontal flip
+  RE_PROB: 0.5 # random erasing
+  PADDING: 10
+
+DATASETS:
+  NAMES: ('dukemtmc')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+
+SOLVER:
+  OPTIMIZER_NAME: 'Adam'
+  MAX_EPOCHS: 200
+  BASE_LR: 0.00035
+
+  CLUSTER_MARGIN: 0.3
+
+  CENTER_LR: 0.5
+  CENTER_LOSS_WEIGHT: 0.0005
+
+  RANGE_K: 2
+  RANGE_MARGIN: 0.3
+  RANGE_ALPHA: 0
+  RANGE_BETA: 1
+  RANGE_LOSS_WEIGHT: 1
+
+  BIAS_LR_FACTOR: 1
+  WEIGHT_DECAY: 0.0005
+  WEIGHT_DECAY_BIAS: 0.0005
+  IMS_PER_BATCH: 32
+
+  STEPS: [30, 50]
+  GAMMA: 0.1
+
+  WARMUP_FACTOR: 0.01
+  WARMUP_ITERS: 10
+  WARMUP_METHOD: 'linear'
+
+  CHECKPOINT_PERIOD: 200
+  LOG_PERIOD: 20
+  EVAL_PERIOD: 200
+
+  edge_k: 3
+  edge_weight: False
+  graphconv_dim_out: [2048, 2048]
+  num_layers: 3
+  graphconv_loss: 'triplet_center_ID'
+  graphconv_MAX_EPOCHS: 2
+  graphconv_IMS_PER_BATCH: 64
+  graphconv_NUM_INSTANCE: 4
+  graphconv_EVAL_PERIOD: 40
+
+  graphconv_STEPS: [15, 20]
+
+  all_MAX_EPOCHS: 200
+  all_EVAL_PERIOD: [200]
+  all_STEPS: [40, 70]
+  all_WARMUP_ITERS: 10
+  all_part: False
+
+  train_result_log: []
+  test_result_log: []
+
+TEST:
+  IMS_PER_BATCH: 128
+  RE_RANKING: 'no'
+  WEIGHT: "results/cuhk03/train_detected/resnet50_model_200.pth"
+  NECK_FEAT: 'after'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: "./results/msmt17/test"
+
+
+
