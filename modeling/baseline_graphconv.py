@@ -243,20 +243,20 @@ class Baseline_graphconv_all(nn.Module):
 
         self.gap = nn.AdaptiveAvgPool2d(1)
         self.graphc = graphc(self.in_planes, dim_out, num_layers)
-        self.bottleneck = nn.BatchNorm1d(dim_out+self.in_planes)
-        # self.bottleneck = nn.BatchNorm1d(self.in_planes)
+        # self.bottleneck = nn.BatchNorm1d(dim_out+self.in_planes)
+        self.bottleneck = nn.BatchNorm1d(self.in_planes)
         self.bottleneck.bias.requires_grad_(False)  # no shift
         self.bottleneck.apply(weights_init_kaiming)
-        self.reduction = nn.Sequential(
-            nn.Linear(dim_out+self.in_planes, 1024, 1),
-            nn.BatchNorm1d(1024),
-            nn.ReLU()
-        )
         # self.reduction = nn.Sequential(
-        #     nn.Linear(self.in_planes, 1024, 1),
+        #     nn.Linear(dim_out+self.in_planes, 1024, 1),
         #     nn.BatchNorm1d(1024),
         #     nn.ReLU()
         # )
+        self.reduction = nn.Sequential(
+            nn.Linear(self.in_planes, 1024, 1),
+            nn.BatchNorm1d(1024),
+            nn.ReLU()
+        )
         self.reduction.apply(weights_init_kaiming)
         self.classifier = nn.Linear(1024, num_classes, bias=False)
         self.classifier.apply(weights_init_classifier)
@@ -265,12 +265,12 @@ class Baseline_graphconv_all(nn.Module):
         self.batch_crop = BatchDrop(0.33, 1.0)
         self.part_gap = nn.AdaptiveMaxPool2d((1, 1))
         self.part_graphc = graphc(self.in_planes, part_dim_out, num_layers)
-        self.part_bottleneck = nn.BatchNorm1d(dim_out+self.in_planes)
-        # self.part_bottleneck = nn.BatchNorm1d(self.in_planes)
+        # self.part_bottleneck = nn.BatchNorm1d(dim_out+self.in_planes)
+        self.part_bottleneck = nn.BatchNorm1d(self.in_planes)
         self.part_bottleneck.bias.requires_grad_(False)  # no shift
         self.part_bottleneck.apply(weights_init_kaiming)
-        self.part_classifier = nn.Linear(dim_out+self.in_planes, num_classes, bias=False)
-        # self.part_classifier = nn.Linear(self.in_planes, num_classes, bias=False)
+        # self.part_classifier = nn.Linear(dim_out+self.in_planes, num_classes, bias=False)
+        self.part_classifier = nn.Linear(self.in_planes, num_classes, bias=False)
         self.part_classifier.apply(weights_init_classifier)
 
 
@@ -293,8 +293,8 @@ class Baseline_graphconv_all(nn.Module):
         else:
             edge_before = Compute_edge_no_weight(before_feat_for_edge, self.k)
             global_feat_with_graph = self.graphc(global_feat, edge_before, None)
-        global_feat_with_graph = torch.cat((global_feat_with_graph, global_feat), 1)
-        # global_feat_with_graph = global_feat
+        # global_feat_with_graph = torch.cat((global_feat_with_graph, global_feat), 1)
+        global_feat_with_graph = global_feat
         feat_with_graph.append(global_feat_with_graph)
 
         global_after_feat_with_graph = self.bottleneck(global_feat_with_graph)  # normalize for angular softmax
@@ -312,8 +312,8 @@ class Baseline_graphconv_all(nn.Module):
                 part_feat_with_graph = self.part_graphc(part_feat, edge_before, edge_weight_before)
             else:
                 part_feat_with_graph = self.part_graphc(part_feat, edge_before, None)
-            part_feat_with_graph = torch.cat((part_feat_with_graph, part_feat), 1)
-            # part_feat_with_graph = part_feat
+            # part_feat_with_graph = torch.cat((part_feat_with_graph, part_feat), 1)
+            part_feat_with_graph = part_feat
             feat_with_graph.append(part_feat_with_graph)
 
             part_after_feat_with_graph = self.part_bottleneck(part_feat_with_graph)
